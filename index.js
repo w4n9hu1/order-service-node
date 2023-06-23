@@ -3,6 +3,7 @@ const cors = require('cors')
 
 const app = express()
 app.use(cors())
+app.use(express.json())
 
 let orders = [
     {
@@ -46,6 +47,24 @@ app.get('/api/orders/:id', (request, response) => {
     } else {
         response.status(404).end();
     }
+})
+
+app.post('/api/orders', (request, response) => {
+    const maxId = orders.length > 0
+        ? Math.max(...orders.map(n => n.id)) + 1
+        : 0
+
+    const newOrder = {
+        ...request.body,
+        id: maxId,
+        status: "Pending",
+        receivedItemsCount: 0,
+        createdDate: new Date(),
+    };
+
+    orders = orders.concat(newOrder);
+
+    response.json(newOrder)
 })
 
 const PORT = process.env.PORT || 3001
