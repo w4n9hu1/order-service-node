@@ -1,55 +1,56 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
+const Order = require('./models/order')
 
 const app = express()
 app.use(cors())
+app.use(express.json())
 
-let orders = [
-    {
-        "id": 1,
-        "orderNumber": "RO001",
-        "supplier": "Supplier A",
-        "status": "Pending",
-        "createdDate": "2023-06-20T10:15:00.000Z",
-        "itemsCount": 10,
-        "receivedItemsCount": 5
-    },
-    {
-        "id": 2,
-        "orderNumber": "RO002",
-        "supplier": "Supplier B",
-        "status": "Completed",
-        "createdDate": "2023-06-18T14:30:00.000Z",
-        "itemsCount": 8,
-        "receivedItemsCount": 8
-    },
-    {
-        "id": 3,
-        "orderNumber": "RO003",
-        "supplier": "Supplier C",
-        "status": "In Progress",
-        "createdDate": "2023-06-21T09:45:00.000Z",
-        "itemsCount": 15,
-        "receivedItemsCount": 2
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
     }
-]
+
+    next(error)
+}
+app.use(errorHandler)
 
 app.get('/api/orders', (request, response) => {
-    response.json(orders)
+    Order.find({}).then(orders => {
+        response.json(orders)
+    })
 })
 
-app.get('/api/orders/:id', (request, response) => {
-    const id = request.params.id;
-    var order = orders.find(o => o.id == id);
-    if (order) {
-        response.json(order);
-    } else {
-        response.status(404).end();
-    }
+app.get('/api/orders/:id', (request, response, next) => {
+    Order.findById(request.params.id).then(order => {
+        if (order) {
+            response.json(order);
+        } else {
+            response.status(404).end();
+        }
+    }).catch(error => next(error))
 })
 
-const PORT = process.env.PORT || 3001
+app.post('/api/orders', (request, response) => {
+    const newOrder = new Order({
+        ...request.body,
+        status: "Pending",
+        receivedItemsCount: 0,
+        createdDate: new Date()
+    })
+
+    newOrder.save().then(order => {
+        response.json(order)
+    })
+})
+
+const PORT = process.env.PORT
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
+
