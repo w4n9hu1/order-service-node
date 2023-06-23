@@ -28,24 +28,24 @@ app.get('/api/orders', (request, response) => {
 app.get('/api/orders/:id', (request, response, next) => {
     Order.findById(request.params.id).then(order => {
         if (order) {
-            response.json(order);
+            response.json(order)
         } else {
-            response.status(404).end();
+            response.status(404).end()
         }
     }).catch(error => next(error))
 })
 
-app.post('/api/orders', (request, response) => {
+app.post('/api/orders', (request, response, next) => {
     const newOrder = new Order({
         ...request.body,
-        status: "Pending",
+        status: 'Pending',
         receivedItemsCount: 0,
         createdDate: new Date()
     })
 
     newOrder.save().then(order => {
         response.json(order)
-    })
+    }).catch(error => next(error))
 })
 
 const PORT = process.env.PORT
