@@ -1,56 +1,10 @@
-require('dotenv').config()
-const express = require('express')
-const cors = require('cors')
-const Order = require('./models/order')
+const app = require('./app')
+const http = require('http')
+const logger = require('./utils/logger')
+const config = require('./utils/config')
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+const server = http.createServer(app)
 
-
-const errorHandler = (error, request, response, next) => {
-    console.error(error.message)
-
-    if (error.name === 'CastError') {
-        return response.status(400).send({ error: 'malformatted id' })
-    }
-
-    next(error)
-}
-app.use(errorHandler)
-
-app.get('/api/orders', (request, response) => {
-    Order.find({}).then(orders => {
-        response.json(orders)
-    })
+server.listen(config.PORT, () => {
+    logger.info(`Server running on port ${config.PORT}`)
 })
-
-app.get('/api/orders/:id', (request, response, next) => {
-    Order.findById(request.params.id).then(order => {
-        if (order) {
-            response.json(order)
-        } else {
-            response.status(404).end()
-        }
-    }).catch(error => next(error))
-})
-
-app.post('/api/orders', (request, response, next) => {
-    const newOrder = new Order({
-        ...request.body,
-        status: 'Pending',
-        receivedItemsCount: 0,
-        createdDate: new Date()
-    })
-
-    newOrder.save().then(order => {
-        response.json(order)
-    }).catch(error => next(error))
-})
-
-const PORT = process.env.PORT
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-})
-

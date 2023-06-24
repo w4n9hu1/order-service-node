@@ -1,24 +1,20 @@
 const mongoose = require('mongoose')
 
-const url = process.env.MONGODB_URI
-
-console.log('connecting to', url)
-
-mongoose.connect(url)
-    .then(() => {
-        console.log('connected to MongoDB')
-    })
-    .catch((error) => {
-        console.log('error connecting to MongoDB:', error.message)
-    })
-
 const orderSchema = new mongoose.Schema({
-    orderNumber: String,
+    orderNumber: {
+        type: String,
+        required: true,
+        minlength: 5
+    },
     supplier: String,
     status: String,
     itemsCount: Number,
     receivedItemsCount: Number,
     createdDate: Date,
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 })
 
 orderSchema.set('toJSON', {

@@ -2,7 +2,8 @@ POST http://localhost:3001/api/orders
 Content-Type: application/json
 
 { 
-    "orderNumber": "RO00_TEST",
-    "supplier": "Supplier A",
-    "itemsCount": 10
+    "orderNumber": "RO00_TEST_002",
+    "supplier": "Supplier F",
+    "itemsCount": 10,
+    "userId":"6496ac3f9e6ebe1da76e7b8f"
 }
