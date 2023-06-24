@@ -1,6 +1,7 @@
 const ordersRouter = require('express').Router()
 const Order = require('../models/order')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
 
 ordersRouter.get('/', (request, response) => {
     Order.find({}).then(orders => {
@@ -18,8 +19,20 @@ ordersRouter.get('/:id', (request, response, next) => {
     }).catch(error => next(error))
 })
 
+const getTokenFrom = request => {
+    const authorization = request.get('authorization')
+    if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+        return authorization.substring(7)
+    }
+    return null
+}
 ordersRouter.post('/', async (request, response, next) => {
-    const user = await User.findById(request.body.userId)
+
+    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
+    if (!decodedToken.id) {
+        return response.status(401).json({ error: 'token invalid' })
+    }
+    const user = await User.findById(decodedToken.id)
 
     const newOrder = new Order({
         ...request.body,
