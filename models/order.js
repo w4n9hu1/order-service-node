@@ -1,12 +1,20 @@
 const mongoose = require('mongoose')
 
 const orderSchema = new mongoose.Schema({
-    orderNumber: String,
+    orderNumber: {
+        type: String,
+        required: true,
+        minlength: 5
+    },
     supplier: String,
     status: String,
     itemsCount: Number,
     receivedItemsCount: Number,
     createdDate: Date,
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 })
 
 orderSchema.set('toJSON', {
